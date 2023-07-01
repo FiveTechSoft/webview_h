@@ -1873,7 +1873,7 @@ public:
             case WM_CLOSE:
               DestroyWindow(hwnd);
               break;
-            case WM_DESTROY:
+            case WM_NCDESTROY:
               w->terminate();
               break;
             case WM_GETMINMAXINFO: {
@@ -1941,7 +1941,9 @@ public:
   void run() {
     MSG msg;
     BOOL res;
-    while ((res = GetMessage(&msg, nullptr, 0, 0)) != -1) {
+
+    bRunning = TRUE;
+    while ( bRunning && (res = GetMessage(&msg, nullptr, 0, 0)) != -1) {
       if (msg.hwnd) {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
@@ -1951,13 +1953,12 @@ public:
         auto f = (dispatch_fn_t *)(msg.lParam);
         (*f)();
         delete f;
-      } else if (msg.message == WM_QUIT) {
-        return;
       }
     }
   }
+
   void *window() { return (void *)m_window; }
-  void terminate() { /* PostQuitMessage(0); */ }
+  void terminate() { bRunning = FALSE; /* PostQuitMessage(0); */ }
   void dispatch(dispatch_fn_t f) {
     PostThreadMessage(m_main_thread, WM_APP, 0, (LPARAM) new dispatch_fn_t(f));
   }
@@ -2109,6 +2110,7 @@ private:
   // Source: https://docs.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/webview2-idl#createcorewebview2environmentwithoptions
   com_init_wrapper m_com_init{COINIT_APARTMENTTHREADED};
   HWND m_window = nullptr;
+  BOOL bRunning = FALSE;
   POINT m_minsz = POINT{0, 0};
   POINT m_maxsz = POINT{0, 0};
   DWORD m_main_thread = GetCurrentThreadId();
