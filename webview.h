@@ -1873,7 +1873,7 @@ public:
             case WM_CLOSE:
               DestroyWindow(hwnd);
               break;
-            case WM_NCDESTROY:
+            case WM_DESTROY:
               w->terminate();
               break;
             case WM_GETMINMAXINFO: {
