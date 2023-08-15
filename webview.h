@@ -185,6 +185,10 @@ WEBVIEW_API const webview_version_info_t *webview_version();
 
 WEBVIEW_API void webview_set_user_agent(webview_t w, const char *agent);
 
+WEBVIEW_API void webview_OpenDevToolsWindow( webview_t w );
+
+WEBVIEW_API void webview_AreDefaultContextMenusEnabled( webview_t w, int bOnOff );
+
 #ifdef __cplusplus
 }
 
@@ -1850,7 +1854,7 @@ public:
     if (!m_com_init.is_initialized()) {
       return;
     }
-    enable_dpi_awareness();
+    // enable_dpi_awareness();
     if (window == nullptr) {
       HINSTANCE hInstance = GetModuleHandle(nullptr);
       HICON icon = (HICON)LoadImage(
@@ -2021,6 +2025,20 @@ public:
                              reinterpret_cast<void **>(&settings2));
     settings2->put_UserAgent(widen_string(agent).c_str());
     settings2->Release();
+  }
+
+  void OpenDevToolsWindow() {
+    ICoreWebView2Settings *settings = nullptr;
+
+    m_webview->get_Settings(&settings);
+    m_webview->OpenDevToolsWindow();
+    settings->put_AreDevToolsEnabled(TRUE);
+  }
+
+  void AreDefaultContextMenusEnabled( bool bOnOff ) {
+    ICoreWebView2Settings *settings = nullptr;
+    m_webview->get_Settings(&settings);
+    settings->put_AreDefaultContextMenusEnabled( bOnOff);    
   }
 
 private:
@@ -2213,6 +2231,7 @@ public:
     });
   }
 
+
 private:
   void on_message(const std::string &msg) {
     auto seq = detail::json_parse(msg, "id", 0);
@@ -2313,6 +2332,15 @@ WEBVIEW_API const webview_version_info_t *webview_version() {
 WEBVIEW_API void webview_set_user_agent(webview_t w, const char *agent) {
   static_cast<webview::webview *>(w)->set_user_agent(agent);
 }
+
+WEBVIEW_API void webview_OpenDevToolsWindow( webview_t w ) {
+  static_cast<webview::webview *>(w)->OpenDevToolsWindow();
+}
+
+WEBVIEW_API void webview_AreDefaultContextMenusEnabled(webview_t w, bool bOnOff ) {
+  static_cast<webview::webview *>(w)->AreDefaultContextMenusEnabled( bOnOff );
+}
+
 #endif /* WEBVIEW_HEADER */
 #endif /* __cplusplus */
 #endif /* WEBVIEW_H */
